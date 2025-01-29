@@ -1,19 +1,21 @@
 import * as dotenv from "dotenv";
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
-import { TASK_COMPILE_SOLIDITY_GET_SOURCE_PATHS }from "hardhat/builtin-tasks/task-names";
+import { TASK_COMPILE_SOLIDITY_GET_SOURCE_PATHS } from "hardhat/builtin-tasks/task-names";
+import { subtask } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox-viem";
 import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-chai-matchers";
 import "@typechain/hardhat";
 import "hardhat-deploy";
 import "hardhat-gas-reporter";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
 const glob = require("glob");
 const path = require("path");
 
 dotenv.config();
 
-subtask(TASK_COMPILE_SOLIDITY_GET_SOURCE_PATHS).setAction(async (_, hre, runSuper) => {
+subtask(TASK_COMPILE_SOLIDITY_GET_SOURCE_PATHS).setAction(async (_: any, hre: HardhatRuntimeEnvironment, runSuper: () => Promise<string[]>) => {
   const paths = await runSuper();
 
   const otherDirectoryGlob = path.join(hre.config.paths.root, "test", "hardhat", "mocks", "**", "*.sol");
@@ -23,6 +25,9 @@ subtask(TASK_COMPILE_SOLIDITY_GET_SOURCE_PATHS).setAction(async (_, hre, runSupe
 });
 
 const config: HardhatUserConfig = {
+  sourcify: {
+    enabled: true,
+  },
   solidity: {
     compilers: [
       {
@@ -53,6 +58,31 @@ const config: HardhatUserConfig = {
         version: "0.8.28",
       },
     ],
+  },
+  etherscan: {
+    apiKey: {
+      gnosis: process.env.GNOSISSCAN_API_KEY!,
+      xdai: process.env.GNOSISSCAN_API_KEY!, // xdai is an alias for gnosis chain
+    },
+    customChains: [
+      {
+        network: "gnosis",
+        chainId: 100,
+        urls: {
+          apiURL: "https://api.gnosisscan.io/api",
+          browserURL: "https://gnosisscan.io"
+        }
+      }
+    ]
+  },
+  namedAccounts: {
+    deployer: {
+      default: 0,
+      1: 0, // ethereum
+      100: 0, // gnosis
+      5: 0, // goerli
+      11155111: 0, // sepolia
+    },
   },
   networks: {
     hardhat: {

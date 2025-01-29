@@ -1,13 +1,17 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
+import "@nomicfoundation/hardhat-viem";
+import "hardhat-deploy";
 import { DeployFunction } from "hardhat-deploy/types";
 
 const deployFutarchyRealityProxy: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deployments, getNamedAccounts, getChainId } = hre;
   const { deploy } = deployments;
 
-  // fallback to hardhat node signers on local network
-  const namedAccounts = await getNamedAccounts()
-  const deployer = namedAccounts.deployer ?? (await hre.viem.getWalletClients())[0].account.address;
+  const { deployer } = await getNamedAccounts();
+  if (!deployer) {
+    throw new Error("No deployer account found");
+  }
+  
   const chainId = Number(await getChainId());
   console.log("deploying to chainId %s with deployer %s", chainId, deployer);
 
@@ -21,6 +25,7 @@ const deployFutarchyRealityProxy: DeployFunction = async (hre: HardhatRuntimeEnv
       reality.address,
     ],
     log: true,
+    deterministicDeployment: false, // Force new deployment
   });
 };
 

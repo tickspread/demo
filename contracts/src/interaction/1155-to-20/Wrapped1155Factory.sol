@@ -207,12 +207,12 @@ contract Wrapped1155Factory is ERC1155Receiver {
         view
         returns (Wrapped1155)
     {
-        return Wrapped1155(address(uint256(keccak256(abi.encodePacked(
+        return Wrapped1155(address(uint160(uint256(keccak256(abi.encodePacked(
             uint8(0xff),
             this,
             uint256(1155),
             keccak256(getWrapped1155DeployBytecode(multiToken, tokenId, data))
-        )))));
+        ))))));
     }
 
     event Wrapped1155Creation(
@@ -231,12 +231,12 @@ contract Wrapped1155Factory is ERC1155Receiver {
     {
         bytes memory deployBytecode = getWrapped1155DeployBytecode(multiToken, tokenId, data);
 
-        address wrapped1155Address = address(uint256(keccak256(abi.encodePacked(
+        address wrapped1155Address = address(uint160(uint256(keccak256(abi.encodePacked(
             uint8(0xff),
             this,
             uint256(1155),
             keccak256(deployBytecode)
-        ))));
+        )))));
 
         if (!wrapped1155Address.isContract()) {
             address addr;
